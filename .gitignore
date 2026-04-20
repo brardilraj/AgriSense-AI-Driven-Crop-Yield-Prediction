@@ -1,7 +1,3 @@
-# Navigate to project root
-cd "C:\Users\dilra\.vscode\Crop yield prediction"
-
-# Overwrite .gitignore with corrected version
 @"
 # ─── Large Model Files Only ───────────────────────────────────────────────────
 models/crop_yield_model.pkl
