@@ -416,7 +416,7 @@ The dashboard (`dashboard/index.html`) is a single self-contained HTML file that
 ### 1. Clone / Download the Project
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/brardilraj/AgriSense-AI-Driven-Crop-Yield-Prediction
 # or extract the ZIP archive
 cd "Crop yield prediction"
 ```
@@ -468,10 +468,22 @@ data/master_dataset.csv            ← used to build dropdown lists
 models/crop_yield_model.pkl        ← used by /api/best_district
 ```
 
-If `crop_yield_model.pkl` is missing, train it first:
+## 📦 Model Setup
 
+The pre-trained model is hosted separately due to file size (267 MB).
+
+### Download Pre-trained Model
+
+**Option 1: From Releases (Recommended)**
+1. Go to [Releases](https://github.com/brardilraj/AgriSense-AI-Driven-Crop-Yield-Prediction/releases/latest)
+2. Download `crop_yield_model.pkl`
+3. Place it in `models/crop_yield_model.pkl`
+
+**Option 2: Train from Scratch**
 ```bash
 python scripts/train_model.py
+# Training time: ~5-10 minutes
+# Output: models/crop_yield_model.pkl
 ```
 
 ---
