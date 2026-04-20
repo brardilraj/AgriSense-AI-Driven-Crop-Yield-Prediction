@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriSense — Crop Yield Intelligence</title>
+<meta name="description" content="AI-powered crop yield prediction and district optimization for Tamil Nadu agricultural planning using Random Forest ML models.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════════════ */
+:root {
+  --bg:       #050d0a;
+  --surface:  #0c1a12;
+  --panel:    #101f16;
+  --panel2:   #142419;
+  --border:   #1d3326;
+  --border2:  #243e2e;
+  --accent:   #22c55e;
+  --accent-d: #16a34a;
+  --accent-g: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  --accent2:  #f59e0b;
+  --accent3:  #38bdf8;
+  --text:     #ecfdf5;
+  --text2:    #d1fae5;
+  --muted:    #4d7a5c;
+  --muted2:   #6b8f74;
+  --danger:   #f87171;
+  --r:        12px;
+  --r-sm:     8px;
+  --r-lg:     16px;
+  --fh:       'Fira Code', monospace;
+  --fb:       'Fira Sans', sans-serif;
+  --shadow:   0 4px 24px rgba(0,0,0,.45);
+  --shadow-g: 0 0 0 1px rgba(34,197,94,.15), 0 4px 24px rgba(0,0,0,.45);
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--fb);
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-size: 14px;
+  line-height: 1.6;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: var(--fb); cursor: pointer; border: none; background: none; }
+
+/* Global ambient glow */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 50% at 8% 15%,  rgba(34,197,94,.055) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 92% 85%,rgba(56,189,248,.035) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(245,158,11,.02) 0%, transparent 70%);
+}
+
+/* ═══════════════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════════════ */
+.shell { position: relative; z-index: 1; display: flex; min-height: 100vh; }
+
+/* ═══════════════════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════════════════ */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 22px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.logo-mark {
+  width: 36px;
+  height: 36px;
+  background: var(--accent-g);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 16px rgba(34,197,94,.3);
+}
+.logo-mark svg { width: 20px; height: 20px; color: #052e10; }
+.logo-text { font-family: var(--fh); font-size: 16px; font-weight: 700; color: var(--accent); letter-spacing: -.01em; }
+.logo-tag  { font-size: 10px; color: var(--muted); font-weight: 400; margin-top: 1px; }
+
+/* Nav */
+.nav { margin-top: 16px; display: flex; flex-direction: column; gap: 3px; padding: 0 12px; }
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted2);
+  transition: all .18s ease;
+  border: 1px solid transparent;
+  width: 100%;
+  text-align: left;
+}
+.nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+.nav-item:hover { background: var(--panel); color: var(--text2); }
+.nav-item.active {
+  background: rgba(34,197,94,.1);
+  color: var(--accent);
+  border-color: rgba(34,197,94,.2);
+}
+
+/* Sidebar footer */
+.sidebar-foot {
+  margin-top: auto;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--muted2);
+  font-weight: 500;
+}
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: background .4s;
+  flex-shrink: 0;
+}
+.status-dot.online { background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: pulse-dot 2.5s infinite; }
+@keyframes pulse-dot { 0%,100%{ box-shadow: 0 0 4px var(--accent); } 50%{ box-shadow: 0 0 12px var(--accent); } }
+
+/* ═══════════════════════════════════════════════════════
+   MAIN
+═══════════════════════════════════════════════════════ */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+/* Topbar */
+.topbar {
+  padding: 16px 32px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(5,13,10,.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.page-title { font-family: var(--fh); font-size: 18px; font-weight: 700; letter-spacing: -.02em; }
+.page-sub   { font-size: 12px; color: var(--muted2); margin-top: 2px; }
+.api-badge  {
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  color: var(--muted2);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all .35s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.api-badge.online { border-color: rgba(34,197,94,.35); color: var(--accent); background: rgba(34,197,94,.07); }
+
+/* Content */
+.content { flex: 1; padding: 28px 32px; overflow-y: auto; }
+
+/* ═══════════════════════════════════════════════════════
+   TAB SYSTEM
+═══════════════════════════════════════════════════════ */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeUp .28s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ═══════════════════════════════════════════════════════
+   SECTION HEADINGS
+═══════════════════════════════════════════════════════ */
+.section-hd { margin-bottom: 24px; }
+.section-title { font-family: var(--fh); font-size: 22px; font-weight: 700; letter-spacing: -.03em; }
+.section-sub   { color: var(--muted2); font-size: 13px; margin-top: 5px; max-width: 560px; line-height: 1.55; }
+
+/* ═══════════════════════════════════════════════════════
+   GRID UTILITIES
+═══════════════════════════════════════════════════════ */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+/* ═══════════════════════════════════════════════════════
+   CARD
+═══════════════════════════════════════════════════════ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 22px 24px;
+  transition: border-color .2s;
+}
+.card:hover { border-color: var(--border2); }
+.card-title {
+  font-family: var(--fh);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   KPI STAT CARDS
+═══════════════════════════════════════════════════════ */
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all .2s;
+  cursor: default;
+}
+.stat-card:hover { border-color: var(--border2); transform: translateY(-1px); box-shadow: var(--shadow); }
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.stat-icon svg { width: 22px; height: 22px; }
+.stat-icon.green  { background: rgba(34,197,94,.12); color: var(--accent); }
+.stat-icon.amber  { background: rgba(245,158,11,.12); color: var(--accent2); }
+.stat-icon.blue   { background: rgba(56,189,248,.12); color: var(--accent3); }
+.stat-num { font-family: var(--fh); font-size: 28px; font-weight: 700; line-height: 1; color: var(--text); }
+.stat-lbl { font-size: 12px; color: var(--muted2); margin-top: 3px; }
+
+/* ═══════════════════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════════════════ */
+.hero {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 36px 40px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(34,197,94,.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-accent-line {
+  width: 42px;
+  height: 3px;
+  background: var(--accent-g);
+  border-radius: 2px;
+  margin-bottom: 16px;
+}
+.hero h1 { font-family: var(--fh); font-size: 28px; font-weight: 700; line-height: 1.2; margin-bottom: 10px; letter-spacing: -.03em; }
+.hero h1 span { color: var(--accent); }
+.hero p { color: var(--muted2); font-size: 13.5px; max-width: 520px; line-height: 1.65; margin-bottom: 24px; }
+.hero-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.chip {
+  font-size: 12px;
+  padding: 5px 13px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  color: var(--muted2);
+  background: var(--panel);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chip svg { width: 13px; height: 13px; }
+.chip.green { border-color: rgba(34,197,94,.3); color: var(--accent); background: rgba(34,197,94,.07); }
+.chip.amber { border-color: rgba(245,158,11,.3); color: var(--accent2); background: rgba(245,158,11,.07); }
+.chip.blue  { border-color: rgba(56,189,248,.3);  color: var(--accent3); background: rgba(56,189,248,.07); }
+
+/* ═══════════════════════════════════════════════════════
+   QUICK-ACCESS CARDS
+═══════════════════════════════════════════════════════ */
+.qa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.qa-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 24px;
+  cursor: pointer;
+  transition: all .2s;
+  position: relative;
+  overflow: hidden;
+}
+.qa-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r);
+  background: linear-gradient(135deg, rgba(34,197,94,.04) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity .2s;
+}
+.qa-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow-g); }
+.qa-card:hover::after { opacity: 1; }
+.qa-card-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: rgba(34,197,94,.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  margin-bottom: 14px;
+  transition: background .2s;
+}
+.qa-card.blue .qa-card-icon { background: rgba(56,189,248,.1); color: var(--accent3); }
+.qa-card:hover .qa-card-icon { background: rgba(34,197,94,.18); }
+.qa-card.blue:hover .qa-card-icon { background: rgba(56,189,248,.18); }
+.qa-card-icon svg { width: 22px; height: 22px; }
+.qa-card h3 { font-family: var(--fh); font-size: 15px; font-weight: 700; margin-bottom: 6px; letter-spacing: -.02em; }
+.qa-card p { font-size: 12.5px; color: var(--muted2); line-height: 1.55; }
+.qa-arr {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--panel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: all .2s;
+}
+.qa-card:hover .qa-arr { background: rgba(34,197,94,.15); color: var(--accent); transform: translateX(2px); }
+
+/* ═══════════════════════════════════════════════════════
+   FORM
+═══════════════════════════════════════════════════════ */
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted2);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.field-hint { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.field select, .field input {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--r-sm);
+  padding: 9px 12px;
+  font-size: 13.5px;
+  font-family: var(--fb);
+  outline: none;
+  transition: border-color .18s, box-shadow .18s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.field select:focus, .field input:focus {
+  border-color: rgba(34,197,94,.45);
+  box-shadow: 0 0 0 3px rgba(34,197,94,.08);
+}
+.field select option { background: var(--panel2); }
+.field input::placeholder { color: var(--muted); }
+
+/* ═══════════════════════════════════════════════════════
+   BUTTON
+═══════════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: var(--r-sm);
+  font-family: var(--fh);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all .18s ease;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--accent-g);
+  color: #031a0a;
+  width: 100%;
+  margin-top: 8px;
+  letter-spacing: .01em;
+}
+.btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(34,197,94,.25); }
+.btn-primary:active { transform: none; filter: brightness(.98); }
+.btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; filter: none; box-shadow: none; }
+.spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(3,26,10,.3);
+  border-top-color: #031a0a;
+  border-radius: 50%;
+  animation: spin .65s linear infinite;
+  display: none;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════════════════════
+   RESULT BOX
+═══════════════════════════════════════════════════════ */
+.result-box {
+  margin-top: 22px;
+  display: none;
+}
+.result-box.visible {
+  display: block;
+  animation: fadeUp .35s ease;
+}
+
+/* Main yield display */
+.yield-display {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 24px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.yield-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: rgba(34,197,94,.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.yield-icon svg { width: 26px; height: 26px; }
+.yield-label { font-size: 11px; color: var(--muted2); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+.yield-value {
+  font-family: var(--fh);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -.03em;
+  line-height: 1;
+}
+.yield-unit { font-size: 12.5px; color: var(--muted2); margin-top: 3px; }
+
+/* Optimization card */
+.opt-card {
+  border-radius: var(--r);
+  padding: 20px 22px;
+  border: 1px solid;
+  margin-bottom: 14px;
+}
+.opt-card.optimal {
+  background: rgba(34,197,94,.05);
+  border-color: rgba(34,197,94,.2);
+}
+.opt-card.switch {
+  background: rgba(245,158,11,.05);
+  border-color: rgba(245,158,11,.2);
+}
+.opt-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.opt-badge {
+  font-family: var(--fh);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: .05em;
+}
+.opt-badge.optimal { background: rgba(34,197,94,.15); color: var(--accent); border: 1px solid rgba(34,197,94,.3); }
+.opt-badge.switch  { background: rgba(245,158,11,.15); color: var(--accent2); border: 1px solid rgba(245,158,11,.3); }
+.opt-crop-name { font-family: var(--fh); font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.opt-yield-info { font-size: 12.5px; color: var(--muted2); margin-bottom: 14px; }
+.opt-yield-info strong { color: var(--text2); }
+
+/* Progress bar for yield comparison */
+.progress-wrap { margin-bottom: 8px; }
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted2);
+  margin-bottom: 6px;
+}
+.progress-track {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+.progress-base {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: var(--muted);
+  border-radius: 3px;
+  transition: width 1s cubic-bezier(.4,0,.2,1);
+}
+.progress-opt {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1.2s cubic-bezier(.4,0,.2,1);
+}
+.progress-opt.g { background: var(--accent-g); }
+.progress-opt.a { background: linear-gradient(90deg, #f59e0b, #d97706); }
+
+/* Input summary */
+.input-summary {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.input-tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--panel2);
+  border: 1px solid var(--border2);
+  color: var(--muted2);
+}
+
+/* ═══════════════════════════════════════════════════════
+   ERROR MESSAGE
+═══════════════════════════════════════════════════════ */
+.error-msg {
+  color: var(--danger);
+  font-size: 13px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: rgba(248,113,113,.07);
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(248,113,113,.2);
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+.error-msg.show { display: flex; animation: fadeUp .2s ease; }
+.error-msg svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════════════════
+   NOTE BOX
+═══════════════════════════════════════════════════════ */
+.note {
+  font-size: 12.5px;
+  color: var(--muted2);
+  padding: 12px 15px;
+  background: rgba(245,158,11,.04);
+  border: 1px solid rgba(245,158,11,.15);
+  border-radius: var(--r-sm);
+  margin-top: 14px;
+  line-height: 1.6;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.note svg { width: 14px; height: 14px; flex-shrink: 0; color: var(--accent2); margin-top: 2px; }
+.note strong { color: var(--accent2); }
+
+/* ═══════════════════════════════════════════════════════
+   LEADERBOARD
+═══════════════════════════════════════════════════════ */
+.leaderboard { display: flex; flex-direction: column; gap: 8px; }
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 15px;
+  background: var(--surface);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  transition: border-color .18s;
+}
+.lb-row:hover { border-color: var(--border2); }
+.lb-rank { font-family: var(--fh); font-weight: 700; font-size: 14px; width: 22px; color: var(--muted2); flex-shrink: 0; }
+.lb-rank.gold   { color: #f59e0b; }
+.lb-rank.silver { color: #94a3b8; }
+.lb-rank.bronze { color: #a78a72; }
+.lb-name { flex: 1; font-weight: 500; color: var(--text2); }
+.lb-bar-wrap { width: 100px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.lb-bar { height: 100%; border-radius: 3px; width: 0; transition: width 1.1s cubic-bezier(.4,0,.2,1); }
+.lb-bar.g { background: var(--accent-g); }
+.lb-bar.b { background: linear-gradient(90deg, #38bdf8, #0ea5e9); }
+.lb-val { font-family: var(--fh); font-weight: 700; font-size: 13px; color: var(--accent); min-width: 72px; text-align: right; }
+
+/* ═══════════════════════════════════════════════════════
+   BEST DISTRICT WINNER CARD
+═══════════════════════════════════════════════════════ */
+.winner-card {
+  background: linear-gradient(135deg, rgba(34,197,94,.08), rgba(56,189,248,.06));
+  border: 1px solid rgba(34,197,94,.25);
+  border-radius: var(--r);
+  padding: 24px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.winner-trophy {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  background: rgba(245,158,11,.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent2);
+  flex-shrink: 0;
+}
+.winner-trophy svg { width: 28px; height: 28px; }
+.winner-label { font-size: 11px; color: var(--muted2); text-transform: uppercase; letter-spacing: .08em; }
+.winner-name { font-family: var(--fh); font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: -.03em; }
+.winner-yield { font-size: 12.5px; color: var(--muted2); margin-top: 2px; }
+.winner-yield strong { color: var(--accent); font-family: var(--fh); }
+
+/* ═══════════════════════════════════════════════════════
+   FULL DISTRICT TABLE
+═══════════════════════════════════════════════════════ */
+.dt-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.dt-head .card-title { margin-bottom: 0; }
+.dt-count {
+  font-size: 11px;
+  color: var(--muted2);
+  background: var(--panel2);
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  font-family: var(--fh);
+}
+
+.dist-table-wrap {
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+.dist-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.dist-table th {
+  background: var(--panel2);
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted2);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-bottom: 1px solid var(--border);
+}
+.dist-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: middle; }
+.dist-table tr:last-child td { border-bottom: none; }
+.dist-table tr:hover td { background: var(--panel); }
+.dist-rank-num { font-family: var(--fh); font-weight: 600; color: var(--muted2); width: 36px; }
+.dist-table .dist-yield { font-family: var(--fh); font-weight: 600; color: var(--accent); text-align: right; }
+.dist-bar-cell { width: 80px; }
+.dist-mini-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.dist-mini-fill {
+  height: 100%;
+  background: var(--accent-g);
+  border-radius: 2px;
+  width: 0;
+  transition: width 1s ease;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SKELETON LOADING
+═══════════════════════════════════════════════════════ */
+.skeleton {
+  background: linear-gradient(90deg, var(--panel) 25%, var(--panel2) 50%, var(--panel) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.sk-line { height: 14px; margin-bottom: 8px; }
+.sk-stat { height: 80px; border-radius: var(--r); }
+
+/* ═══════════════════════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ═══════════════════════════════════════════════════════
+   MOBILE BOTTOM NAV
+═══════════════════════════════════════════════════════ */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  backdrop-filter: blur(16px);
+}
+.mobile-nav-inner { display: flex; align-items: center; justify-content: space-around; }
+.mobile-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 20px;
+  border-radius: var(--r-sm);
+  color: var(--muted2);
+  font-size: 10px;
+  font-weight: 600;
+  transition: color .18s;
+  cursor: pointer;
+}
+.mobile-nav-btn svg { width: 20px; height: 20px; }
+.mobile-nav-btn.active { color: var(--accent); }
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .mobile-nav { display: block; }
+  .content { padding: 20px 18px 80px; }
+  .topbar { padding: 14px 18px; }
+  .grid-2, .qa-grid { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+  .hero { padding: 26px 24px; }
+  .hero h1 { font-size: 22px; }
+}
+@media (max-width: 520px) {
+  .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   REDUCED MOTION
+═══════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" role="navigation" aria-label="Main navigation">
+    <div class="logo">
+      <div class="logo-mark" aria-hidden="true">
+        <!-- Leaf icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+      </div>
+      <div>
+        <div class="logo-text">AgriSense</div>
+        <div class="logo-tag">Yield Intelligence</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" data-tab="home" onclick="go('home',this)" aria-current="page">
+        <!-- Home icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        Overview
+      </button>
+      <button class="nav-item" data-tab="predict" onclick="go('predict',this)">
+        <!-- Trending up icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        Predict Yield
+      </button>
+      <button class="nav-item" data-tab="district" onclick="go('district',this)">
+        <!-- Map pin icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Best District
+      </button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="status-pill">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="apiStatus">Connecting…</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="page-title" id="pageTitle">Overview</div>
+        <div class="page-sub" id="pageSub">AI-powered crop yield intelligence for Tamil Nadu</div>
+      </div>
+      <div class="api-badge" id="apiBadge" aria-live="polite">
+        <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
+        <span id="apiBadgeText">Offline</span>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ══════════════ HOME ══════════════ -->
+      <div class="tab-panel active" id="tab-home">
+
+        <!-- Hero -->
+        <div class="hero">
+          <div class="hero-accent-line"></div>
+          <h1>AI Crop Yield<br><span>Intelligence System</span></h1>
+          <p>Predict harvest outcomes and discover which Tamil Nadu district maximises yield — powered by a Random Forest model trained on real agricultural data.</p>
+          <div class="hero-chips">
+            <span class="chip green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              Yield Prediction
+            </span>
+            <span class="chip blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              District Finder
+            </span>
+            <span class="chip amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Random Forest ML
+            </span>
+          </div>
+        </div>
+
+        <!-- KPI Stat Cards -->
+        <div class="grid-3" style="margin-bottom:24px">
+          <div class="stat-card" id="sk-d">
+            <div class="stat-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div>
+              <div class="stat-num" id="statDistricts">—</div>
+              <div class="stat-lbl">Districts Available</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+            </div>
+            <div>
+              <div class="stat-num" id="statCrops">—</div>
+              <div class="stat-lbl">Crop Varieties</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div>
+              <div class="stat-num" id="statSeasons">—</div>
+              <div class="stat-lbl">Growing Seasons</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Access -->
+        <div class="qa-grid">
+          <div class="qa-card" onclick="go('predict', document.querySelector('[data-tab=predict]'))" role="button" tabindex="0" aria-label="Navigate to Predict Yield">
+            <div class="qa-arr" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </div>
+            <div class="qa-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+            <h3>Predict Yield</h3>
+            <p>Select your district, crop and season. The AI returns the expected yield in tons/hectare and recommends the best-performing crop for that location.</p>
+          </div>
+          <div class="qa-card blue" onclick="go('district', document.querySelector('[data-tab=district]'))" role="button" tabindex="0" aria-label="Navigate to Best District">
+            <div class="qa-arr" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </div>
+            <div class="qa-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <h3>Best District</h3>
+            <p>Describe your crop, soil and climate conditions. The model ranks every Tamil Nadu district and reveals which one yields the most under your parameters.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ PREDICT YIELD ══════════════ -->
+      <div class="tab-panel" id="tab-predict">
+        <div class="section-hd">
+          <div class="section-title">Predict Crop Yield</div>
+          <div class="section-sub">Select district, crop and season. The model predicts expected yield and finds the optimal crop via exhaustive optimization.</div>
+        </div>
+
+        <div style="max-width:500px">
+          <div class="card">
+            <div class="card-title">Input Parameters</div>
+            <div class="field">
+              <label for="p-district">District</label>
+              <select id="p-district" aria-required="true">
+                <option value="">— select district —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="p-crop">Crop</label>
+              <select id="p-crop" aria-required="true">
+                <option value="">— select crop —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="p-season">Season</label>
+              <select id="p-season" aria-required="true">
+                <option value="">— select season —</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="runPredict()" id="btnPredict" aria-label="Run yield prediction">
+              <span class="spinner" id="spnPredict" aria-hidden="true"></span>
+              <span id="lblPredict">Run Prediction</span>
+              <svg id="btnPredictArrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+            <div class="error-msg" id="errPredict" role="alert">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span id="errPredictMsg"></span>
+            </div>
+          </div>
+
+          <div class="note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div><strong>How optimization works:</strong> After predicting yield for your chosen crop, the model tests every crop using the same district and season, returning the one with the highest projected yield. All values are in <strong>tons / hectare</strong>.</div>
+          </div>
+
+          <!-- Result -->
+          <div class="result-box" id="resPredict">
+            <!-- Yield display -->
+            <div class="yield-display">
+              <div class="yield-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+              </div>
+              <div>
+                <div class="yield-label">Predicted Yield</div>
+                <div class="yield-value" id="valPredict" aria-live="polite">—</div>
+                <div class="yield-unit">tons / hectare</div>
+              </div>
+            </div>
+
+            <!-- Optimization card -->
+            <div class="opt-card" id="optCard">
+              <div class="opt-header">
+                <span class="opt-badge" id="optBadge"></span>
+              </div>
+              <div class="opt-crop-name" id="valRecCrop">—</div>
+              <div class="opt-yield-info" id="valRecYield">—</div>
+
+              <!-- Yield comparison bars -->
+              <div class="progress-wrap" id="progressWrap">
+                <div class="progress-labels">
+                  <span id="progLbBase">Your crop</span>
+                  <span id="progLbOpt">Optimized</span>
+                </div>
+                <div class="progress-track" style="margin-bottom:6px">
+                  <div class="progress-base" id="progBase"></div>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-opt" id="progOpt"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Input summary -->
+            <div class="input-summary">
+              <span class="input-tag" id="tagDistrict"></span>
+              <span class="input-tag" id="tagCrop"></span>
+              <span class="input-tag" id="tagSeason"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ BEST DISTRICT ══════════════ -->
+      <div class="tab-panel" id="tab-district">
+        <div class="section-hd">
+          <div class="section-title">Best District Finder</div>
+          <div class="section-sub">Provide crop, soil, and climate parameters. The model ranks every district in Tamil Nadu by predicted yield under your conditions.</div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:20px">
+
+          <!-- LEFT — Crop & Climate -->
+          <div class="card">
+            <div class="card-title">Crop &amp; Climate</div>
+            <div class="field">
+              <label for="d-crop">Crop</label>
+              <select id="d-crop" aria-required="true"><option value="">— select —</option></select>
+            </div>
+            <div class="field">
+              <label for="d-season">Season</label>
+              <select id="d-season" aria-required="true"><option value="">— select —</option></select>
+            </div>
+            <div class="field">
+              <label for="d-climate">Climate Type</label>
+              <select id="d-climate"><option value="">— select —</option></select>
+            </div>
+            <div class="field">
+              <label for="d-rainfall">Rainfall (mm)</label>
+              <input type="number" id="d-rainfall" placeholder="e.g. 850" min="0" max="10000">
+              <div class="field-hint">Annual rainfall in millimetres</div>
+            </div>
+            <div class="field">
+              <label for="d-tmax">Max Temperature (°C)</label>
+              <input type="number" id="d-tmax" placeholder="e.g. 38" min="-10" max="60">
+            </div>
+            <div class="field">
+              <label for="d-tmin">Min Temperature (°C)</label>
+              <input type="number" id="d-tmin" placeholder="e.g. 22" min="-20" max="50">
+            </div>
+            <div class="field">
+              <label for="d-area">Area Cultivated (ha)</label>
+              <input type="number" id="d-area" placeholder="e.g. 120" min="0">
+            </div>
+          </div>
+
+          <!-- RIGHT — Soil Properties -->
+          <div>
+            <div class="card" style="margin-bottom:0">
+              <div class="card-title">Soil Properties</div>
+              <div class="field">
+                <label for="d-fertility">Fertility Level</label>
+                <select id="d-fertility"><option value="">— select —</option></select>
+              </div>
+              <div class="field">
+                <label for="d-texture">Soil Texture</label>
+                <select id="d-texture"><option value="">— select —</option></select>
+              </div>
+              <div class="field">
+                <label for="d-drainage">Drainage</label>
+                <select id="d-drainage"><option value="">— select —</option></select>
+              </div>
+              <div class="field">
+                <label for="d-water">Water Holding Capacity</label>
+                <select id="d-water"><option value="">— select —</option></select>
+              </div>
+              <div class="field">
+                <label for="d-salinity">Salinity Level</label>
+                <select id="d-salinity"><option value="">— select —</option></select>
+              </div>
+              <div class="field">
+                <label for="d-irrigation">Irrigation Level</label>
+                <select id="d-irrigation"><option value="">— select —</option></select>
+              </div>
+              <div class="field">
+                <label for="d-ph">Soil pH</label>
+                <input type="number" step="0.1" id="d-ph" placeholder="e.g. 6.5" min="0" max="14">
+                <div class="field-hint">Typical range: 4.5 – 8.5</div>
+              </div>
+              <div class="field">
+                <label for="d-net">Net Cropped Area (ha)</label>
+                <input type="number" id="d-net" placeholder="e.g. 100" min="0">
+              </div>
+              <div class="field">
+                <label for="d-gross">Gross Cropped Area (ha)</label>
+                <input type="number" id="d-gross" placeholder="e.g. 130" min="0">
+              </div>
+              <button class="btn btn-primary" onclick="runDistrict()" id="btnDistrict" aria-label="Find best district">
+                <span class="spinner" id="spnDistrict" aria-hidden="true"></span>
+                <span id="lblDistrict">Find Best District</span>
+                <svg id="btnDistrictArrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </button>
+              <div class="error-msg" id="errDistrict" role="alert">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span id="errDistrictMsg"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- District Results -->
+        <div class="result-box" id="resDistrict">
+
+          <!-- Winner card -->
+          <div class="winner-card">
+            <div class="winner-trophy" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 2 8 8 3 8"/><polyline points="16 2 16 8 21 8"/><path d="M12 17v5"/><path d="M9 22h6"/><path d="M8 8a4 4 0 008 0"/><path d="M5 8a7 7 0 0014 0"/></svg>
+            </div>
+            <div>
+              <div class="winner-label">Best District</div>
+              <div class="winner-name" id="valDistName">—</div>
+              <div class="winner-yield">Expected yield: <strong id="valDistYield">—</strong> tons / hectare</div>
+            </div>
+          </div>
+
+          <!-- Top 5 Leaderboard -->
+          <div class="card" style="margin-bottom:18px">
+            <div class="card-title">Top 5 Districts</div>
+            <div class="leaderboard" id="lbDistrict"></div>
+          </div>
+
+          <!-- Full ranking table -->
+          <div class="card">
+            <div class="dt-head">
+              <div class="card-title">All Districts Ranked</div>
+              <div class="dt-count" id="distCount">0 districts</div>
+            </div>
+            <div class="dist-table-wrap">
+              <table class="dist-table" aria-label="District yield rankings">
+                <thead>
+                  <tr>
+                    <th style="width:42px">#</th>
+                    <th>District</th>
+                    <th style="width:88px">Relative</th>
+                    <th style="width:100px;text-align:right">Yield (t/ha)</th>
+                  </tr>
+                </thead>
+                <tbody id="distTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- Mobile bottom navigation -->
+<nav class="mobile-nav" aria-label="Mobile navigation">
+  <div class="mobile-nav-inner">
+    <button class="mobile-nav-btn active" data-tab="home" onclick="go('home',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      Home
+    </button>
+    <button class="mobile-nav-btn" data-tab="predict" onclick="go('predict',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      Predict
+    </button>
+    <button class="mobile-nav-btn" data-tab="district" onclick="go('district',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      District
+    </button>
+  </div>
+</nav>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   CONFIG & STATE
+════════════════════════════════════════════════════════ */
+const API = '';  // Same-origin — Flask serves this file
+
+/* ════════════════════════════════════════════════════════
+   TAB NAVIGATION
+════════════════════════════════════════════════════════ */
+const META = {
+  home:     ['Overview',       'AI-powered crop yield intelligence for Tamil Nadu'],
+  predict:  ['Predict Yield',  'District · Crop · Season → yield prediction + crop optimization'],
+  district: ['Best District',  'Rank all Tamil Nadu districts by predicted yield under your conditions'],
+};
+
+function go(id, _el) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item, .mobile-nav-btn').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+
+  // Highlight correct nav buttons (sidebar + mobile)
+  document.querySelectorAll('[data-tab="' + id + '"]').forEach(b => b.classList.add('active'));
+
+  document.getElementById('pageTitle').textContent = META[id][0];
+  document.getElementById('pageSub').textContent   = META[id][1];
+}
+
+/* ════════════════════════════════════════════════════════
+   SELECT POPULATION
+════════════════════════════════════════════════════════ */
+function fill(id, values) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  values.forEach(v => {
+    const o = document.createElement('option');
+    o.value = v;
+    o.textContent = v.length > 2
+      ? v.charAt(0).toUpperCase() + v.slice(1)   // Capitalise for ai lists
+      : v;
+    sel.appendChild(o);
+  });
+}
+
+function fillRaw(id, values) {
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  values.forEach(v => {
+    const o = document.createElement('option');
+    o.value = o.textContent = v;
+    sel.appendChild(o);
+  });
+}
+
+async function loadOptions() {
+  try {
+    const res = await fetch(API + '/api/options');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const d = await res.json();
+
+    // Predict Yield form (lowercase from ai_system)
+    fill('p-district', d.districts_ai);
+    fill('p-crop',     d.crops_ai);
+    fill('p-season',   d.seasons_ai);
+
+    // Best District form (pickle encoder classes)
+    fillRaw('d-crop',      d.crops_bd);
+    fillRaw('d-season',    d.seasons_bd);
+    fillRaw('d-climate',   d.climate);
+    fillRaw('d-fertility', d.fertility);
+    fillRaw('d-texture',   d.texture);
+    fillRaw('d-drainage',  d.drainage);
+    fillRaw('d-water',     d.water_holding);
+    fillRaw('d-salinity',  d.salinity);
+    fillRaw('d-irrigation',d.irrigation);
+
+    // KPI cards
+    document.getElementById('statDistricts').textContent = d.districts_ai.length;
+    document.getElementById('statCrops').textContent     = d.crops_ai.length;
+    document.getElementById('statSeasons').textContent   = d.seasons_ai.length;
+
+    // Status
+    setOnline(true);
+  } catch(e) {
+    console.error('Options load failed:', e);
+    setOnline(false);
+  }
+}
+
+function setOnline(on) {
+  document.getElementById('statusDot').className    = 'status-dot' + (on ? ' online' : '');
+  document.getElementById('apiStatus').textContent  = on ? 'API Online' : 'API Offline — start app.py';
+  document.getElementById('apiBadgeText').textContent = on ? 'Online' : 'Offline';
+  document.getElementById('apiBadge').className     = 'api-badge' + (on ? ' online' : '');
+}
+
+/* ════════════════════════════════════════════════════════
+   LOADING STATE
+════════════════════════════════════════════════════════ */
+function setLoading(pfx, on, defaultLabel) {
+  const btn   = document.getElementById('btn' + pfx);
+  const spn   = document.getElementById('spn' + pfx);
+  const lbl   = document.getElementById('lbl' + pfx);
+  const arrow = document.getElementById('btn' + pfx + 'Arrow');
+
+  btn.disabled = on;
+  spn.style.display  = on ? 'inline-block' : 'none';
+  lbl.textContent    = on ? 'Running…' : defaultLabel;
+  if (arrow) arrow.style.display = on ? 'none' : '';
+}
+
+/* ════════════════════════════════════════════════════════
+   ERROR DISPLAY
+════════════════════════════════════════════════════════ */
+function showErr(pfx, msg) {
+  const el = document.getElementById('err' + pfx);
+  const msgEl = document.getElementById('err' + pfx + 'Msg');
+  msgEl.textContent = msg;
+  el.classList.add('show');
+}
+function clearErr(pfx) {
+  document.getElementById('err' + pfx).classList.remove('show');
+}
+
+/* ════════════════════════════════════════════════════════
+   VALUE HELPERS
+════════════════════════════════════════════════════════ */
+function g(id)  { const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+function gn(id) { const v = parseFloat(g(id)); return isNaN(v) ? null : v; }
+
+/* ════════════════════════════════════════════════════════
+   ANIMATED COUNTER
+════════════════════════════════════════════════════════ */
+function animateNum(el, target, duration = 800, decimals = 2) {
+  const start = parseFloat(el.textContent) || 0;
+  const diff  = target - start;
+  let startTime = null;
+  function step(ts) {
+    if (!startTime) startTime = ts;
+    const p = Math.min((ts - startTime) / duration, 1);
+    const ease = p < .5 ? 2*p*p : -1 + (4 - 2*p)*p;
+    el.textContent = (start + diff * ease).toFixed(decimals);
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ════════════════════════════════════════════════════════
+   LEADERBOARD BUILDER
+════════════════════════════════════════════════════════ */
+const RANK_CLS = ['gold', 'silver', 'bronze', '', ''];
+
+function buildLB(rows) {
+  const el = document.getElementById('lbDistrict');
+  el.innerHTML = '';
+  const max = rows[0]?.predicted_yield || 1;
+  rows.forEach((r, i) => {
+    const pct = Math.round((r.predicted_yield / max) * 100);
+    const div = document.createElement('div');
+    div.className = 'lb-row';
+    div.innerHTML = `
+      <div class="lb-rank ${RANK_CLS[i] || ''}">${i + 1}</div>
+      <div class="lb-name">${r.district}</div>
+      <div class="lb-bar-wrap"><div class="lb-bar g" data-w="${pct}%"></div></div>
+      <div class="lb-val">${r.predicted_yield}</div>`;
+    el.appendChild(div);
+  });
+  requestAnimationFrame(() => {
+    el.querySelectorAll('.lb-bar').forEach(b => b.style.width = b.dataset.w);
+  });
+}
+
+/* ════════════════════════════════════════════════════════
+   FULL DISTRICT TABLE BUILDER
+════════════════════════════════════════════════════════ */
+function buildDistTable(rows) {
+  const tbody = document.getElementById('distTableBody');
+  tbody.innerHTML = '';
+  const max = rows[0]?.predicted_yield || 1;
+  document.getElementById('distCount').textContent = rows.length + ' districts';
+
+  rows.forEach((r, i) => {
+    const pct = Math.round((r.predicted_yield / max) * 100);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="dist-rank-num">${i + 1}</td>
+      <td>${r.district}</td>
+      <td class="dist-bar-cell">
+        <div class="dist-mini-bar"><div class="dist-mini-fill" data-w="${pct}%"></div></div>
+      </td>
+      <td class="dist-yield">${r.predicted_yield}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  // Animate mini bars
+  requestAnimationFrame(() => {
+    tbody.querySelectorAll('.dist-mini-fill').forEach(b => b.style.width = b.dataset.w);
+  });
+}
+
+/* ════════════════════════════════════════════════════════
+   PREDICT YIELD
+════════════════════════════════════════════════════════ */
+async function runPredict() {
+  clearErr('Predict');
+  const district = g('p-district');
+  const crop     = g('p-crop');
+  const season   = g('p-season');
+
+  if (!district) return showErr('Predict', 'Please select a District.');
+  if (!crop)     return showErr('Predict', 'Please select a Crop.');
+  if (!season)   return showErr('Predict', 'Please select a Season.');
+
+  setLoading('Predict', true, 'Run Prediction');
+  try {
+    const res = await fetch(API + '/api/predict', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ District_Name: district, Crop: crop, Season: season }),
+    });
+    const d = await res.json();
+    if (d.error) throw new Error(d.error);
+
+    // ── Yield display ──
+    const valEl = document.getElementById('valPredict');
+    valEl.textContent = '0.00';
+    document.getElementById('resPredict').classList.add('visible');
+    animateNum(valEl, d.predicted_yield, 900);
+
+    // ── Input tags ──
+    document.getElementById('tagDistrict').textContent = district.charAt(0).toUpperCase() + district.slice(1);
+    document.getElementById('tagCrop').textContent     = crop.charAt(0).toUpperCase() + crop.slice(1);
+    document.getElementById('tagSeason').textContent   = season;
+
+    // ── Optimization card ──
+    const optCard  = document.getElementById('optCard');
+    const badge    = document.getElementById('optBadge');
+    const cropName = document.getElementById('valRecCrop');
+    const yieldInfo= document.getElementById('valRecYield');
+    const progBase = document.getElementById('progBase');
+    const progOpt  = document.getElementById('progOpt');
+    const progWrap = document.getElementById('progressWrap');
+
+    cropName.textContent = d.recommended_crop;
+
+    const maxY = Math.max(d.predicted_yield, d.optimized_yield) || 1;
+    const basePct = Math.round((d.predicted_yield / maxY) * 100);
+    const optPct  = Math.round((d.optimized_yield  / maxY) * 100);
+
+    progBase.style.width = '0';
+    progOpt.style.width  = '0';
+
+    if (d.is_already_optimal) {
+      optCard.className = 'opt-card optimal';
+      badge.className   = 'opt-badge optimal';
+      badge.textContent = '✓ Already Optimal';
+      yieldInfo.innerHTML = 'Optimized yield: <strong>' + d.optimized_yield + ' t/ha</strong> — your selected crop is already the best choice.';
+      progOpt.className = 'progress-opt g';
+      document.getElementById('progLbBase').textContent = 'Selected crop';
+      document.getElementById('progLbOpt').textContent  = 'Optimized';
+    } else {
+      const gain = (d.optimized_yield - d.predicted_yield).toFixed(2);
+      const pct  = ((gain / d.predicted_yield) * 100).toFixed(1);
+      optCard.className = 'opt-card switch';
+      badge.className   = 'opt-badge switch';
+      badge.textContent = '+' + pct + '% by switching';
+      yieldInfo.innerHTML = 'Switch to this crop for <strong>' + d.optimized_yield + ' t/ha</strong> — an improvement of <strong>+' + gain + ' t/ha</strong>.';
+      progOpt.className = 'progress-opt a';
+      document.getElementById('progLbBase').textContent = 'Current crop (' + d.predicted_yield + ')';
+      document.getElementById('progLbOpt').textContent  = 'Optimized (' + d.optimized_yield + ')';
+    }
+
+    // Animate bars
+    requestAnimationFrame(() => {
+      progBase.style.width = basePct + '%';
+      progOpt.style.width  = optPct  + '%';
+    });
+
+  } catch(e) {
+    showErr('Predict', e.message);
+  } finally {
+    setLoading('Predict', false, 'Run Prediction');
+  }
+}
+
+/* ════════════════════════════════════════════════════════
+   BEST DISTRICT
+════════════════════════════════════════════════════════ */
+async function runDistrict() {
+  clearErr('District');
+  const crop   = g('d-crop');
+  const season = g('d-season');
+  if (!crop)   return showErr('District', 'Please select a Crop.');
+  if (!season) return showErr('District', 'Please select a Season.');
+
+  const payload = {
+    Crop:                  crop,
+    Season:                season,
+    Climate_Type:          g('d-climate'),
+    Fertility_Level:       g('d-fertility'),
+    Texture:               g('d-texture'),
+    Drainage:              g('d-drainage'),
+    Water_Holding:         g('d-water'),
+    Salinity:              g('d-salinity'),
+    Irrigation_Level:      g('d-irrigation'),
+    Rainfall_mm:           gn('d-rainfall'),
+    Temp_Max_C:            gn('d-tmax'),
+    Temp_Min_C:            gn('d-tmin'),
+    Area:                  gn('d-area'),
+    pH:                    gn('d-ph'),
+    Net_Cropped_Area_ha:   gn('d-net'),
+    Gross_Cropped_Area_ha: gn('d-gross'),
+  };
+
+  setLoading('District', true, 'Find Best District');
+  try {
+    const res = await fetch(API + '/api/best_district', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+    const d = await res.json();
+    if (d.error) throw new Error(d.error);
+
+    // Winner card
+    document.getElementById('valDistName').textContent  = d.best_district;
+    animateNum(document.getElementById('valDistYield'), d.best_yield, 900);
+
+    // Leaderboard (top 5)
+    buildLB(d.top_districts);
+
+    // Full table (all districts)
+    buildDistTable(d.all_districts);
+
+    document.getElementById('resDistrict').classList.add('visible');
+  } catch(e) {
+    showErr('District', e.message);
+  } finally {
+    setLoading('District', false, 'Find Best District');
+  }
+}
+
+/* ════════════════════════════════════════════════════════
+   KEYBOARD SUPPORT FOR QA CARDS
+════════════════════════════════════════════════════════ */
+document.querySelectorAll('.qa-card[tabindex]').forEach(card => {
+  card.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
+  });
+});
+
+/* ════════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════════ */
+loadOptions();
+</script>
+</body>
+</html>

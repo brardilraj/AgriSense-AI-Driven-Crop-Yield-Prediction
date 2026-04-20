@@ -1,0 +1,60 @@
+# Navigate to project root
+cd "C:\Users\dilra\.vscode\Crop yield prediction"
+
+# Overwrite .gitignore with corrected version
+@"
+# ─── Large Model Files Only ───────────────────────────────────────────────────
+models/crop_yield_model.pkl
+
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*`$py.class
+*.pyo
+*.pyd
+.Python
+
+# ─── Virtual Environments ─────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# ─── Data Files (only very large raw files) ───────────────────────────────────
+# Keep processed CSV files, ignore only if too large
+# data/raw/
+# *.csv  # COMMENTED OUT - we need CSV files for the project
+
+# ─── Jupyter ──────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ─── Linting / Caching ────────────────────────────────────────────────────────
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# ─── Security / Audit Reports ─────────────────────────────────────────────────
+bandit_report.json
+tmp_audit_utf8.txt
+
+# ─── OS & Editor ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# ─── Environment Variables ────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── Git LFS (not needed) ─────────────────────────────────────────────────────
+.gitattributes
+"@ | Out-File -FilePath .gitignore -Encoding UTF8 -NoNewline

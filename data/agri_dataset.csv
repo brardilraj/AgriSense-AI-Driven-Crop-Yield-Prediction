@@ -1,0 +1,29 @@
+District,Rainfall_mm,Temp_Max_C,Temp_Min_C,Irrigation_Level,Net_Cropped_Area_ha,Gross_Cropped_Area_ha,Major_Crops,Soil_Type,Climate_Type
+Ariyalur,960,38,23,Medium,95000,130000,Paddy;Groundnut;Sugarcane,Red Loamy,Semi-Arid
+Chengalpattu,1150,36,24,Medium,90000,125000,Paddy;Groundnut;Vegetables,Alluvial,Coastal
+Chennai,1400,37,25,Low,0,0,None,Coastal Sandy,Urban
+Coimbatore,700,35,22,High,180000,240000,Cotton;Maize;Sugarcane,Black Soil,Semi-Arid
+Dharmapuri,830,37,23,Medium,150000,210000,Ragi;Maize;Pulses,Red Soil,Semi-Arid
+Dindigul,900,36,22,Medium,165000,225000,Paddy;Cotton;Groundnut,Red Soil,Semi-Arid
+Erode,750,36,23,High,190000,260000,Turmeric;Sugarcane;Paddy,Black Soil,Semi-Arid
+Kallakurichi,1070,36,24,Medium,170000,230000,Paddy;Maize;Groundnut,Red Soil,Semi-Arid
+Kanchipuram,1399,37,22,Medium,120000,165000,Paddy;Groundnut;Sugarcane,Alluvial,Coastal
+Karur,650,37,23,Medium,140000,195000,Paddy;Groundnut;Cotton,Red Soil,Semi-Arid
+Kanniyakumari,1400,33,23,High,85000,120000,Coconut;Rubber;Paddy,Laterite,Tropical Wet
+Madurai,850,38,24,Medium,175000,235000,Paddy;Cotton;Pulses,Red Soil,Semi-Arid
+Namakkal,820,37,23,Medium,165000,225000,Paddy;Maize;Poultry Feed Crops,Red Soil,Semi-Arid
+Nilgiris,1900,25,15,Medium,45000,60000,Tea;Vegetables;Potato,Mountain Soil,Temperate
+Perambalur,920,37,23,Medium,95000,130000,Paddy;Maize;Cotton,Red Soil,Semi-Arid
+Ramanathapuram,840,38,25,Low,110000,150000,Paddy;Chillies;Groundnut,Coastal Sandy,Arid Coastal
+Ranipet,1100,36,24,Medium,90000,125000,Paddy;Groundnut;Sugarcane,Alluvial,Semi-Arid
+Salem,1239,37,23,Medium,210000,310000,Paddy;Maize;Cotton,Red Soil,Semi-Arid
+Sivagangai,880,38,24,Low,145000,195000,Paddy;Pulses;Groundnut,Red Soil,Semi-Arid
+Tenkasi,1210,36,23,High,125000,165000,Paddy;Banana;Coconut,Alluvial,Tropical
+Theni,910,36,22,High,115000,155000,Paddy;Cotton;Sugarcane,Red Soil,Semi-Arid
+Thoothukudi,630,38,25,Low,105000,140000,Paddy;Cotton;Millets,Coastal Sandy,Arid Coastal
+Tiruchirappalli,880,38,24,High,190000,260000,Paddy;Banana;Sugarcane,Alluvial,Semi-Arid
+Tirunelveli,814,37,24,Medium,185000,245000,Paddy;Cotton;Groundnut,Red Soil,Semi-Arid
+Tiruvallur,1150,36,24,Medium,110000,150000,Paddy;Groundnut;Vegetables,Alluvial,Coastal
+Tiruvannamalai,940,37,23,Medium,185000,245000,Paddy;Groundnut;Pulses,Red Soil,Semi-Arid
+Vellore,900,36,24,Medium,165000,225000,Paddy;Groundnut;Sugarcane,Red Soil,Semi-Arid
+Villupuram,1050,37,24,Medium,195000,260000,Paddy;Groundnut;Millets,Red Soil,Semi-Arid

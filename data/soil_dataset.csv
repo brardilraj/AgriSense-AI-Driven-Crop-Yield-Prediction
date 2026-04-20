@@ -1,0 +1,29 @@
+District,Soil_Type,Texture,pH,Drainage,Water_Holding,Salinity,Fertility_Level
+Kancheepuram,Alluvial,Clay Loam,7.2,Moderate,High,Low,High
+Tiruvallur,Alluvial,Clay Loam,7.3,Moderate,High,Low,High
+Chennai,Coastal Alluvial,Sandy Loam,7.5,Good,Medium,Medium,Medium
+Cuddalore,Alluvial,Clay,7.4,Poor,High,Medium,High
+Villupuram,Red Loamy,Loam,6.8,Moderate,Medium,Low,Medium
+Vellore,Red Soil,Sandy Loam,6.9,Good,Medium,Low,Medium
+Tiruvannamalai,Red Soil,Loam,6.7,Moderate,Medium,Low,Medium
+Dharmapuri,Red Soil,Sandy Loam,6.6,Good,Medium,Low,Medium
+Salem,Red Soil,Loam,6.7,Moderate,Medium,Low,Medium
+Namakkal,Red Soil,Loam,6.8,Moderate,Medium,Low,Medium
+Erode,Black Soil,Clay,7.5,Moderate,High,Low,High
+Coimbatore,Black Soil,Clay Loam,7.6,Good,High,Low,High
+Nilgiris,Mountain Soil,Loam,5.5,Good,Medium,Low,Medium
+Dindigul,Red Soil,Loam,6.8,Moderate,Medium,Low,Medium
+Madurai,Red Soil,Sandy Loam,6.9,Moderate,Medium,Low,Medium
+Theni,Red Soil,Loam,6.7,Moderate,Medium,Low,Medium
+Thanjavur,Alluvial,Clay,7.4,Poor,High,Low,High
+Tiruvarur,Alluvial,Clay,7.5,Poor,High,Low,High
+Nagapattinam,Coastal Alluvial,Clay,7.6,Poor,High,Medium,High
+Trichy,Alluvial,Clay Loam,7.3,Moderate,High,Low,High
+Perambalur,Red Soil,Loam,6.8,Moderate,Medium,Low,Medium
+Pudukottai,Red Soil,Sandy Loam,6.7,Moderate,Medium,Low,Medium
+Sivagangai,Red Soil,Sandy Loam,6.8,Moderate,Medium,Low,Medium
+Ramanathapuram,Coastal Sandy,Sandy,7.8,Good,Low,High,Low
+Virudhunagar,Red Soil,Sandy Loam,6.9,Moderate,Medium,Low,Medium
+Thoothukudi,Coastal Sandy,Sandy Loam,7.7,Good,Low,High,Low
+Tirunelveli,Red Soil,Loam,6.8,Moderate,Medium,Low,Medium
+Kanniyakumari,Laterite,Clay Loam,6.0,Good,High,Low,High
